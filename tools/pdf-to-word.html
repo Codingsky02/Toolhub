@@ -3,147 +3,92 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Toolhub - PDF to Word Converter</title>
-
-<!-- CSS: Toolhub style with drag & drop -->
+<title>PDF to Word Converter</title>
 <style>
   :root {
-    --primary: #2563eb;
-    --text: #1e293b;
+    --primary: #6c5ce7;
+    --primary-light: rgba(108, 92, 231, 0.1);
+    --primary-gradient: linear-gradient(45deg, #6c5ce7, #a29bfe);
+    --background: #f9faff;
+    --text: #333;
   }
+
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f9fafb;
+    max-width: 600px;
+    margin: 3rem auto;
+    padding: 1.5rem;
+    background: var(--background);
     color: var(--text);
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
   }
-  header {
-    position: sticky;
-    top: 0;
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.8);
-    z-index: 100;
-    padding: 24px 40px;
+
+  h1 {
     font-weight: 700;
     font-size: 2rem;
-    letter-spacing: 1.5px;
+    text-align: center;
+    margin-bottom: 2rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    user-select: none;
+  }
+
+  #drop-area {
+    border: 2px dashed var(--primary);
+    border-radius: 10px;
+    padding: 3rem 1rem;
+    text-align: center;
+    cursor: pointer;
     color: var(--primary);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-    user-select: none;
-    text-align: center;
-  }
-  header span {
-    background: linear-gradient(45deg, #6c5ce7, #a29bfe);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    user-select: none;
-  }
-  main {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 50px 20px;
-  }
-  .converter-container {
-    background: white;
-    padding: 40px 40px 50px;
-    border-radius: 12px;
-    width: 420px;
-    box-shadow: 0 12px 36px rgba(37, 99, 235, 0.12);
-    text-align: center;
-  }
-  h2 {
-    margin-bottom: 28px;
-    font-weight: 700;
-    font-size: 1.8rem;
-    user-select: none;
-    color: var(--text);
-  }
-  h2 span {
-    background: linear-gradient(45deg, #6c5ce7, #a29bfe);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .tool-card {
-    border: 1px solid rgba(108, 92, 231, 0.1);
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: background-color 0.3s ease;
     position: relative;
     overflow: hidden;
-    border-radius: 14px;
+    user-select: none;
   }
-  .tool-card::after {
+
+  #drop-area.hover {
+    background: #e6ebff;
+  }
+
+  #drop-area::after {
     content: '';
     position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: linear-gradient(45deg, rgba(108, 92, 231, 0.05), transparent);
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--primary-gradient);
     opacity: 0;
-    transition: opacity 0.3s;
+    transition: opacity 0.3s ease;
+    border-radius: 10px;
     pointer-events: none;
-    border-radius: 14px;
   }
-  .tool-card:hover::after {
-    opacity: 1;
+
+  #drop-area.hover::after {
+    opacity: 0.05;
   }
-  #dropZone {
-    border: 2px dashed var(--primary);
-    border-radius: 16px;
-    padding: 45px 30px;
-    color: var(--primary);
-    font-size: 1.2rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    user-select: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 18px;
-    min-height: 140px;
-    justify-content: center;
-  }
-  #dropZone svg {
-    width: 56px;
-    height: 56px;
-    stroke: var(--primary);
-    transition: stroke 0.3s ease;
-  }
-  #dropZone.dragover {
-    background-color: #e0e7ff;
-    color: #1e40af;
-    border-color: #1e40af;
-  }
-  #dropZone.dragover svg {
-    stroke: #1e40af;
-  }
-  #fileInput {
-    display: none;
-  }
+
   button {
     background: var(--primary);
-    border: none;
-    padding: 14px 25px;
-    border-radius: 10px;
     color: white;
-    font-size: 1.15rem;
-    font-weight: 700;
+    border: none;
+    padding: 0.8rem 1.6rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 10px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 1.5rem;
     position: relative;
     overflow: hidden;
-    width: 100%;
-    margin-top: 25px;
-    user-select: none;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    transition: background-color 0.3s ease;
   }
-  button:hover {
-    background: #1e40af;
-    box-shadow: 0 6px 20px rgba(30, 64, 175, 0.6);
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
+
   button::after {
     content: '';
     position: absolute;
@@ -154,12 +99,14 @@
     background: rgba(255, 255, 255, 0.5);
     opacity: 0;
     border-radius: 100%;
-    transform: scale(1) translate(-50%, -50%);
+    transform: scale(1, 1) translate(-50%, -50%);
     transform-origin: 50% 50%;
   }
+
   button:active::after {
     animation: ripple 0.6s ease-out;
   }
+
   @keyframes ripple {
     0% {
       transform: scale(0, 0);
@@ -170,160 +117,133 @@
       opacity: 0;
     }
   }
-  footer {
-    text-align: center;
-    padding: 16px 10px;
-    font-size: 0.9rem;
-    color: #64748b;
-    background: #f9fafb;
-    user-select: none;
-  }
 </style>
-
-<!-- PDF.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.15.349/pdf.min.js"></script>
-
-<!-- docx.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.7.1/docx.umd.min.js"></script>
-
 </head>
 <body>
 
-<header><span>Toolhub - PDF to Word Converter</span></header>
+<h1>PDF to Word Converter</h1>
 
-<main>
-  <div class="converter-container tool-card">
-    <h2><span>Drag & Drop Menu</span></h2>
-    
-    <label id="dropZone" for="fileInput" tabindex="0" aria-label="File Upload Drop Zone">
-      <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
-        viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="17 8 12 3 7 8"/>
-        <line x1="12" y1="3" x2="12" y2="15"/>
-      </svg>
-      Drag & Drop your PDF file here, or click to select
-    </label>
-    <input type="file" id="fileInput" accept=".pdf" />
+<div id="drop-area">Drag & Drop your <span style="background: var(--primary-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 700;">.pdf</span> file here or click to select</div>
+<input type="file" id="fileElem" accept=".pdf" style="display:none" />
 
-    <button onclick="convert()">Convert to Word</button>
-  </div>
-</main>
+<button id="convertBtn" disabled>Convert to Word</button>
 
-<footer>
-  &copy; 2025 Toolhub
-</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.6.172/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.0.1/docx.umd.js"></script>
 
 <script>
-const dropZone = document.getElementById("dropZone");
-const fileInput = document.getElementById("fileInput");
-let selectedFile = null;
+  const dropArea = document.getElementById("drop-area");
+  const fileInput = document.getElementById("fileElem");
+  const convertBtn = document.getElementById("convertBtn");
+  let selectedFile;
 
-// Drag & Drop events
-dropZone.addEventListener("dragover", (e) => {
-  e.preventDefault();
-  dropZone.classList.add("dragover");
-});
-dropZone.addEventListener("dragleave", (e) => {
-  e.preventDefault();
-  dropZone.classList.remove("dragover");
-});
-dropZone.addEventListener("drop", (e) => {
-  e.preventDefault();
-  dropZone.classList.remove("dragover");
-  if (e.dataTransfer.files.length) {
-    const file = e.dataTransfer.files[0];
+  dropArea.addEventListener("click", () => fileInput.click());
+
+  dropArea.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropArea.classList.add("hover");
+  });
+
+  dropArea.addEventListener("dragleave", () => {
+    dropArea.classList.remove("hover");
+  });
+
+  dropArea.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropArea.classList.remove("hover");
+    if (e.dataTransfer.files.length > 0) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  fileInput.addEventListener("change", () => {
+    if (fileInput.files.length > 0) {
+      handleFile(fileInput.files[0]);
+    }
+  });
+
+  function handleFile(file) {
     if (file.name.toLowerCase().endsWith(".pdf")) {
       selectedFile = file;
-      dropZone.innerHTML = `
-        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
-        viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-        Selected file: ${file.name}
-      `;
-      fileInput.files = e.dataTransfer.files;
+      dropArea.textContent = `Selected file: ${file.name}`;
+      convertBtn.disabled = false;
     } else {
       alert("Please upload a valid PDF file.");
+      selectedFile = null;
+      dropArea.innerHTML = `Drag & Drop your <span style="background: var(--primary-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 700;">.pdf</span> file here or click to select`;
+      convertBtn.disabled = true;
     }
   }
-});
-dropZone.addEventListener("keydown", e => {
-  if (e.key === "Enter" || e.key === " ") {
-    e.preventDefault();
-    fileInput.click();
-  }
-});
-fileInput.addEventListener("change", () => {
-  if (fileInput.files.length) {
-    const file = fileInput.files[0];
-    if (file.name.toLowerCase().endsWith(".pdf")) {
-      selectedFile = file;
-      dropZone.innerHTML = `
-        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
-        viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-        Selected file: ${file.name}
-      `;
-    } else {
-      alert("Please select a PDF file.");
-      fileInput.value = "";
-    }
-  }
-});
 
-// Convert PDF text to Word
-async function convert() {
-  if (!selectedFile) {
-    alert("Please upload a PDF file first.");
-    return;
-  }
-  
-  // Load PDF.js and extract text from all pages
-  const arrayBuffer = await selectedFile.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
-  
-  let fullText = "";
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const textContent = await page.getTextContent();
-    const pageText = textContent.items.map(item => item.str).join(" ");
-    fullText += pageText + "\n\n";
-  }
-  
-  // Create Word document with docx library
-  const { Document, Packer, Paragraph, TextRun } = docx;
-  const doc = new Document({
-    sections: [{
-      children: [
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: fullText.trim(),
-              font: "Calibri",
-              size: 24, // 12pt font
-            }),
-          ],
-        }),
-      ],
-    }],
+  convertBtn.addEventListener("click", async () => {
+    if (!selectedFile) return;
+
+    convertBtn.disabled = true;
+    convertBtn.textContent = "Converting...";
+
+    try {
+      const arrayBuffer = await selectedFile.arrayBuffer();
+
+      // Load PDF document using pdf.js
+      const pdfDoc = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+      const totalPages = pdfDoc.numPages;
+      let fullText = "";
+
+      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+        const page = await pdfDoc.getPage(pageNum);
+        const textContent = await page.getTextContent();
+
+        // Extract text items and join with spaces
+        const pageText = textContent.items.map(item => item.str).join(" ");
+        fullText += pageText + "\n\n";
+      }
+
+      if (!fullText.trim()) {
+        alert("No text found in the PDF.");
+        resetUI();
+        return;
+      }
+
+      // Create Word doc using docx.js
+      const { Document, Packer, Paragraph, TextRun } = window.docx;
+
+      // Split text by lines and paragraphs
+      const paragraphs = fullText.trim().split(/\n+/).map(line => new Paragraph(line));
+
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: paragraphs,
+        }],
+      });
+
+      const buffer = await Packer.toBlob(doc);
+
+      // Save the docx file
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(buffer);
+      link.download = selectedFile.name.replace(/\.pdf$/, ".docx");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      resetUI();
+    } catch (error) {
+      alert("Error during conversion. Check console for details.");
+      console.error(error);
+      resetUI();
+    }
   });
-  
-  const blob = await Packer.toBlob(doc);
-  
-  // Download the .docx file
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = selectedFile.name.replace(/\.pdf$/i, "") + ".docx";
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-}
+
+  function resetUI() {
+    convertBtn.disabled = false;
+    convertBtn.textContent = "Convert to Word";
+    if (selectedFile) {
+      dropArea.textContent = `Selected file: ${selectedFile.name}`;
+    } else {
+      dropArea.innerHTML = `Drag & Drop your <span style="background: var(--primary-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 700;">.pdf</span> file here or click to select`;
+    }
+  }
 </script>
 
 </body>
