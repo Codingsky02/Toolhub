@@ -1,91 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PDF to Word Converter</title>
-
-<style>
-  :root {
-    --primary: #6c5ce7;
-    --primary-light: #a29bfe;
-    --bg-light: #f9faff;
-    --text-dark: #333;
-  }
-
-  body {
-    font-family: Arial, sans-serif;
-    max-width: 600px;
-    margin: 2rem auto;
-    padding: 1rem;
-    background: var(--bg-light);
-    color: var(--text-dark);
-  }
-
-  h1 {
-    text-align: center;
-    background: linear-gradient(45deg, var(--primary), var(--primary-light));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    margin-bottom: 2rem;
-  }
-
-  #drop-area {
-    border: 2px dashed var(--primary);
-    padding: 2rem;
-    text-align: center;
-    cursor: pointer;
-    color: var(--primary);
-    margin-bottom: 1.5rem;
-    border-radius: 8px;
-    transition: background-color 0.3s;
-  }
-  #drop-area.hover {
-    background: rgba(108, 92, 231, 0.1);
-  }
-
-  button {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    font-size: 1.1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
-    font-weight: 600;
-    transition: background-color 0.3s ease;
-  }
-  button:disabled {
-    background: #999;
-    cursor: not-allowed;
-  }
-  button:hover:not(:disabled) {
-    background: var(--primary-light);
-  }
-</style>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PDF to Word Converter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background: #f9f9f9;
+      color: #333;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #4a90e2;
+    }
+    #drop-area {
+      border: 2px dashed #4a90e2;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      transition: background 0.3s;
+    }
+    #drop-area.hover {
+      background: #e6f0fa;
+    }
+    button {
+      background: #4a90e2;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.2rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
 </head>
 <body>
 
 <h1>PDF to Word Converter</h1>
 
-<div id="drop-area">Drag & Drop your PDF file here or click to select</div>
+<div id="drop-area">Drag & Drop your <strong>.pdf</strong> file here or click to select</div>
 <input type="file" id="fileElem" accept=".pdf" style="display:none" />
-
 <button id="convertBtn" disabled>Convert to Word</button>
 
-<!-- PDF.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.9.179/pdf.min.js"></script>
-<!-- docx.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.1.0/docx.min.js"></script>
+<!-- PDF.js Library -->
+<script src="https://unpkg.com/pdfjs-dist@3.9.179/build/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://unpkg.com/pdfjs-dist@3.9.179/build/pdf.worker.min.js";
+</script>
 
 <script>
   const dropArea = document.getElementById("drop-area");
   const fileInput = document.getElementById("fileElem");
   const convertBtn = document.getElementById("convertBtn");
-  let selectedFile = null;
+  let selectedFile;
 
   dropArea.addEventListener("click", () => fileInput.click());
 
@@ -113,73 +93,61 @@
   });
 
   function handleFile(file) {
-    if (file.name.toLowerCase().endsWith(".pdf")) {
+    if (file.name.endsWith(".pdf")) {
       selectedFile = file;
       dropArea.textContent = `Selected file: ${file.name}`;
       convertBtn.disabled = false;
     } else {
-      alert("Please upload a valid PDF file.");
+      alert("Please upload a valid .pdf file.");
       selectedFile = null;
-      dropArea.textContent = "Drag & Drop your PDF file here or click to select";
+      dropArea.textContent = "Drag & Drop your .pdf file here or click to select";
       convertBtn.disabled = true;
     }
-  }
-
-  function resetUI() {
-    convertBtn.disabled = false;
-    convertBtn.textContent = "Convert to Word";
   }
 
   convertBtn.addEventListener("click", async () => {
     if (!selectedFile) return;
 
-    convertBtn.disabled = true;
-    convertBtn.textContent = "Converting...";
-
     try {
       const arrayBuffer = await selectedFile.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-      // Load PDF using PDF.js
-      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-      const pdfDoc = await loadingTask.promise;
-
-      const totalPages = pdfDoc.numPages;
       let fullText = "";
 
-      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-        const page = await pdfDoc.getPage(pageNum);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map(item => item.str).join(" ");
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        const pageText = content.items.map(item => item.str).join(" ");
         fullText += pageText + "\n\n";
       }
 
       if (!fullText.trim()) {
         alert("No text found in the PDF.");
-        resetUI();
         return;
       }
 
-      // Create Word document
-      const { Document, Packer, Paragraph } = window.docx;
-      const paragraphs = fullText.trim().split(/\n+/).map(line => new Paragraph(line));
-      const doc = new Document({ sections: [{ children: paragraphs }] });
+      const wordBlob = new Blob([
+        `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+              xmlns:w='urn:schemas-microsoft-com:office:word' 
+              xmlns='http://www.w3.org/TR/REC-html40'>
+        <head><title>Converted Document</title></head>
+        <body>${fullText.replace(/\n/g, "<br>")}</body></html>
+        `
+      ], { type: 'application/msword' });
 
-      const blob = await Packer.toBlob(doc);
-
-      // Trigger download
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = selectedFile.name.replace(/\.pdf$/i, ".docx");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-    } catch (error) {
-      console.error("Error during conversion:", error);
+      const url = URL.createObjectURL(wordBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = selectedFile.name.replace(/\.pdf$/, ".doc");
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
       alert("Error during conversion. Check console for details.");
+      console.error(err);
     }
-
-    resetUI();
   });
 </script>
 
