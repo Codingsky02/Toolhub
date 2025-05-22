@@ -118,6 +118,12 @@
       transform: translateY(-2px);
       box-shadow: 0 5px 15px rgba(0, 184, 148, 0.3);
     }
+
+    .error-message {
+      color: #ff7675;
+      margin-top: 1rem;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -150,6 +156,8 @@
         Convert to PDF
       </button>
 
+      <div class="error-message" id="errorMessage"></div>
+
       <div class="result-section" id="resultSection">
         <i
           class="fas fa-check-circle"
@@ -179,7 +187,6 @@
   </div>
 
   <script>
-    const API_SECRET = "secret_KlctAbRJR3DpHhu5";
     const dropZone = document.getElementById("dropZone");
     const fileInput = document.getElementById("fileInput");
     const selectFileBtn = document.getElementById("selectFileBtn");
@@ -188,9 +195,20 @@
     const progress = document.getElementById("progress");
     const resultSection = document.getElementById("resultSection");
     const downloadBtn = document.getElementById("downloadBtn");
+    const errorMessage = document.getElementById("errorMessage");
 
     let selectedFile = null;
 
+    // Function to show error message
+    function showError(msg) {
+      errorMessage.textContent = msg;
+      errorMessage.style.display = "block";
+      setTimeout(() => {
+        errorMessage.style.display = "none";
+      }, 5000);
+    }
+
+    // File selection handler
     selectFileBtn.addEventListener("click", () => fileInput.click());
 
     fileInput.addEventListener("change", (e) => {
@@ -199,6 +217,7 @@
       }
     });
 
+    // Drag and drop handlers
     dropZone.addEventListener("dragover", (e) => {
       e.preventDefault();
       dropZone.style.borderColor = "#00cec9";
@@ -220,52 +239,121 @@
       }
     });
 
+    // Conversion handler
     convertBtn.addEventListener("click", async () => {
       if (!selectedFile) return;
 
+      // Reset UI
       progressBar.style.display = "block";
-      progress.style.width = "30%";
-
-      const formData = new FormData();
-
-      // ConvertAPI expects parameters structured as JSON in a single 'Parameters' field
-      // We'll use their recommended way to upload files via multipart/form-data:
-      // Use: Parameters[0][Name] = 'File', Parameters[0][FileValue][Name] = filename, Parameters[0][FileValue][Data] = file blob
-
-      formData.append("Parameters[0][Name]", "File");
-      formData.append("Parameters[0][FileValue][Name]", selectedFile.name);
-      formData.append("Parameters[0][FileValue][Data]", selectedFile);
+      progress.style.width = "10%";
+      resultSection.style.display = "none";
+      errorMessage.style.display = "none";
+      convertBtn.disabled = true;
 
       try {
-        const response = await fetch(
-          `https://v2.convertapi.com/convert/docx/to/pdf?Secret=${API_SECRET}`,
-          {
-            method: "POST",
-            body: formData,
+        // Using a free conversion API (note: for production use, you should use your own backend)
+        const apiUrl = "https://api.cloudconvert.com/v2/convert";
+        
+        // First create a conversion job
+        const jobResponse = await fetch("https://api.cloudconvert.com/v2/jobs", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer YOUR_CLOUDCONVERT_API_KEY", // Replace with your API key
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "tasks": {
+              "import-1": {
+                "operation": "import/upload"
+              },
+              "task-1": {
+                "operation": "convert",
+                "input": ["import-1"],
+                "output_format": "pdf",
+                "engine": "office"
+              },
+              "export-1": {
+                "operation": "export/url",
+                "input": ["task-1"]
+              }
+            }
+          })
+        });
+
+        if (!jobResponse.ok) {
+          throw new Error("Failed to create conversion job");
+        }
+
+        const jobData = await jobResponse.json();
+        const uploadUrl = jobData.data.tasks.find(t => t.name === "import-1").result.form.url;
+        const uploadFormData = jobData.data.tasks.find(t => t.name === "import-1").result.form.parameters;
+        
+        // Upload the file
+        progress.style.width = "30%";
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        for (const key in uploadFormData) {
+          formData.append(key, uploadFormData[key]);
+        }
+
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "POST",
+          body: formData
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error("File upload failed");
+        }
+
+        progress.style.width = "60%";
+        
+        // Wait for conversion to complete
+        let exportUrl;
+        let attempts = 0;
+        const maxAttempts = 30; // 30 attempts with 2s delay = 1 minute timeout
+        
+        while (attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const statusResponse = await fetch(`https://api.cloudconvert.com/v2/jobs/${jobData.data.id}`, {
+            headers: {
+              "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiZDlmM2Q4NjMyM2Y3ZTk1ZTZkOWNkOWJkYzFlNjY5YThlZjc0MTc5YTQ0MmUxZTk4NGEyMjdhMTkzNjEzNmRlNjU3NjdiNGJkMmQ1MjMxZDUiLCJpYXQiOjE3NDc4OTkxMTQuODgyMTU3LCJuYmYiOjE3NDc4OTkxMTQuODgyMTU5LCJleHAiOjQ5MDM1NzI3MTQuODc4MTU3LCJzdWIiOiI3MjAwMzA2NCIsInNjb3BlcyI6WyJ1c2VyLnJlYWQiLCJ1c2VyLndyaXRlIiwidGFzay5yZWFkIiwidGFzay53cml0ZSIsIndlYmhvb2sucmVhZCIsIndlYmhvb2sud3JpdGUiLCJwcmVzZXQucmVhZCIsInByZXNldC53cml0ZSJdfQ.Ozgh2iniW_cTlNql0pQVY_aw61J9SY4PjyxWMUVy2rmbWdlkGkWsFkaYJmjXseu69ncygJWbZLkcyLqxRgwDQ9L5SUj5MEtC13-UJ4TOuqXaJlOBdhgn4CTZ___LjSrQzof7vmvVu593IPss3bYyleqIE3spKBpDKRIQxT1hjeFBxqo8ucTgIYNg2sPShPYsre62tD0sL6vjnR-NzsMAvoHGqptGgr2mIiP5xjcs-MT_0V-YatMcA4ieBaEjJASA1GcFyDdhZg4VKypDsEo0FMr5fd36OeOL8l-eDtGjBMDlbwflvCEwPLcxN0rqSPih9YOzEjPBmjv_rjw485qndhp1hq-_oW-N8pUtp0HQp2-bEXHko5pMmNM5JVuKdIB2vyyhEdH1-aGqrIINhVwSji84sVk8y-MmGGHsDviz9bGiEPM0TLU1-JckY_U-K25-BVGSenhBhIC3jGd8XdF9eWW0PUiXzdMFx2rkA2n4JBO291ZZtXeMN1A_jeGjOkuV5_Q-BiEk86gm9Bx_oLgqj1wwRfRwt7BvGoNyXRm74mqH0uTDp7rhBbd-XodtNN0Mb9GG2IX5MDTP8hGS05weABUsaLOxZJRQ9lrlD-JEYsOaoWh_R1xeaQDfrJ7G4b8H84OmoAembGwus0yKy1Fs0Z_0f2GFp1MT4D0QhVaGbOM"
+            }
+          });
+          
+          const statusData = await statusResponse.json();
+          if (statusData.data.status === "finished") {
+            exportUrl = statusData.data.tasks.find(t => t.name === "export-1").result.files[0].url;
+            break;
+          } else if (statusData.data.status === "error") {
+            throw new Error("Conversion failed");
           }
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          attempts++;
         }
 
-        const data = await response.json();
-        console.log("ConvertAPI response:", data);
-
-        if (!data.Files || data.Files.length === 0) {
-          throw new Error("No files returned from API");
+        if (!exportUrl) {
+          throw new Error("Conversion timed out");
         }
 
-        const pdfUrl = data.Files[0].Url;
+        progress.style.width = "90%";
+        
+        // Download the converted file
+        const downloadResponse = await fetch(exportUrl);
+        if (!downloadResponse.ok) {
+          throw new Error("Failed to download converted file");
+        }
+
+        const pdfBlob = await downloadResponse.blob();
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        
         progress.style.width = "100%";
         resultSection.style.display = "block";
         downloadBtn.href = pdfUrl;
-        downloadBtn.download = data.Files[0].FileName || "converted.pdf";
+        downloadBtn.download = selectedFile.name.replace(/\.[^/.]+$/, "") + ".pdf";
       } catch (error) {
-        alert("Conversion failed. Please try again. " + error.message);
+        showError("Conversion failed: " + error.message);
         console.error("Conversion error:", error);
       } finally {
-        progressBar.style.display = "none";
+        convertBtn.disabled = false;
       }
     });
 
@@ -275,11 +363,18 @@
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       ];
 
+      // Check file type and extension
       if (
         !validTypes.includes(file.type) &&
         !file.name.match(/\.(doc|docx)$/i)
       ) {
-        alert("Please select a valid Word document (DOC or DOCX)");
+        showError("Please select a valid Word document (DOC or DOCX)");
+        return;
+      }
+
+      // Check file size (limit to 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        showError("File size too large. Maximum 10MB allowed.");
         return;
       }
 
@@ -292,6 +387,7 @@
       convertBtn.style.display = "block";
       resultSection.style.display = "none";
       progress.style.width = "0%";
+      errorMessage.style.display = "none";
     }
   </script>
 </body>
