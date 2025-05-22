@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>URL Shortener | ToolHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --primary: #6c5ce7;
+      --bg: #f5f6fa;
+      --card-bg: #ffffff;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+    .shortener-container {
+      background: var(--card-bg);
+      max-width: 600px;
+      width: 100%;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 {
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1.5px solid #ccc;
+      transition: border-color 0.3s;
+      box-sizing: border-box;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 5px var(--primary);
+    }
+    button {
+      margin-top: 1rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.8rem 2rem;
+      font-size: 1rem;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    button:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+    #short {
+      margin-top: 1.5rem;
+      font-weight: 600;
+      color: #333;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <div class="shortener-container">
+    <h1>URL Shortener</h1>
+    <input type="text" id="url" placeholder="Enter long URL here..." />
+    <button onclick="shorten()">Shorten</button>
+    <p id="short"></p>
+  </div>
+
+  <script>
+    function shorten() {
+      const longURL = document.getElementById('url').value.trim();
+      if (!longURL) {
+        alert('Please enter a URL!');
+        return;
+      }
+      // Simple fake short URL generation
+      const fakeShort = 'https://short.ly/' + Math.random().toString(36).substring(2, 8);
+      document.getElementById('short').textContent = 'Short URL: ' + fakeShort;
+    }
+  </script>
+</body>
+</html>

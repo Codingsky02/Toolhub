@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator | ToolHub</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <style>
+    :root {
+      --primary: #6c5ce7;
+      --bg: #f5f6fa;
+      --card-bg: #ffffff;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 2rem;
+    }
+    .generator-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .qr-container {
+      text-align: center;
+      margin: 2rem 0;
+    }
+    #qrCanvas {
+      max-width: 300px;
+      max-height: 300px;
+      margin: 0 auto;
+      border: 1px solid #eee;
+      padding: 10px;
+    }
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+    button:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+    .color-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .color-option {
+      display: flex;
+      align-items: center;
+    }
+    .color-option input {
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      margin-right: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="generator-container">
+    <h1>QR Code Generator</h1>
+    <p>Create custom QR codes for URLs, text, or contact info</p>
+    
+    <div class="input-group">
+      <label for="qrContent">Content to encode:</label>
+      <textarea id="qrContent" placeholder="Enter URL, text, or contact information"></textarea>
+    </div>
+    
+    <div class="color-options">
+      <div class="color-option">
+        <input type="color" id="fgColor" value="#000000">
+        <label for="fgColor">QR Color</label>
+      </div>
+      <div class="color-option">
+        <input type="color" id="bgColor" value="#ffffff">
+        <label for="bgColor">Background</label>
+      </div>
+    </div>
+    
+    <div class="input-group">
+      <label for="qrSize">Size:</label>
+      <select id="qrSize">
+        <option value="200">Medium (200x200)</option>
+        <option value="300">Large (300x300)</option>
+        <option value="150">Small (150x150)</option>
+      </select>
+    </div>
+    
+    <button id="generateBtn">Generate QR Code</button>
+    
+    <div class="qr-container">
+      <canvas id="qrCanvas"></canvas>
+      <div id="qrDownload" style="margin-top: 1rem; display: none;">
+        <button id="downloadBtn">Download QR Code</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const qrContent = document.getElementById('qrContent');
+    const fgColor = document.getElementById('fgColor');
+    const bgColor = document.getElementById('bgColor');
+    const qrSize = document.getElementById('qrSize');
+    const generateBtn = document.getElementById('generateBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const qrCanvas = document.getElementById('qrCanvas');
+    const qrDownload = document.getElementById('qrDownload');
+    
+    let currentQR = null;
+    
+    // Event Listeners
+    generateBtn.addEventListener('click', generateQR);
+    downloadBtn.addEventListener('click', downloadQR);
+    
+    // Generate on initial load with default values
+    window.addEventListener('load', () => {
+      qrContent.value = 'https://example.com';
+      generateQR();
+    });
+    
+    // Functions
+    function generateQR() {
+      if (!qrContent.value.trim()) {
+        alert('Please enter content for the QR code');
+        return;
+      }
+      
+      currentQR = new QRious({
+        element: qrCanvas,
+        value: qrContent.value,
+        size: parseInt(qrSize.value),
+        foreground: fgColor.value,
+        background: bgColor.value,
+        level: 'H' // High error correction
+      });
+      
+      qrDownload.style.display = 'block';
+    }
+    
+    function downloadQR() {
+      if (!currentQR) return;
+      
+      const link = document.createElement('a');
+      link.download = `qrcode-${Date.now()}.png`;
+      link.href = qrCanvas.toDataURL('image/png');
+      link.click();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word to PDF Converter | ToolHub</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Reuse your main styles.css here */
+    :root {
+      --primary: #6c5ce7;
+      --text: #2d3436;
+      --bg: #f5f6fa;
+      --card-bg: #ffffff;
+    }
+    
+    [data-theme="dark"] {
+      --primary: #a29bfe;
+      --text: #f5f6fa;
+      --bg: #1e272e;
+      --card-bg: #2d3436;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.3s;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    /* Tool-specific styles */
+    .converter-container {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      margin-top: 2rem;
+    }
+    
+    .drop-zone {
+      border: 2px dashed var(--primary);
+      border-radius: 8px;
+      padding: 3rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 1.5rem;
+    }
+    
+    .drop-zone:hover {
+      background: rgba(108, 92, 231, 0.05);
+    }
+    
+    .file-input {
+      display: none;
+    }
+    
+    .convert-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.8rem 2rem;
+      border-radius: 50px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: block;
+      margin: 1rem auto;
+      width: fit-content;
+    }
+    
+    .convert-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background: rgba(108, 92, 231, 0.2);
+      border-radius: 3px;
+      margin: 1.5rem 0;
+      overflow: hidden;
+      display: none;
+    }
+    
+    .progress {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width 0.3s;
+    }
+    
+    .result-section {
+      display: none;
+      text-align: center;
+      margin-top: 2rem;
+    }
+    
+    .download-btn {
+      background: #00b894;
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border-radius: 50px;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 1rem;
+      transition: all 0.3s;
+    }
+    
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 184, 148, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Word to PDF Converter</h1>
+    <p>Convert DOC/DOCX files to PDF format instantly</p>
+    
+    <div class="converter-container">
+      <div class="drop-zone" id="dropZone">
+        <i class="fas fa-file-word" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+        <h3>Drag & Drop Word File Here</h3>
+        <p>or</p>
+        <button class="convert-btn" id="selectFileBtn">Select File</button>
+        <input type="file" id="fileInput" class="file-input" accept=".doc,.docx">
+      </div>
+      
+      <div class="progress-bar" id="progressBar">
+        <div class="progress" id="progress"></div>
+      </div>
+      
+      <button class="convert-btn" id="convertBtn" style="display: none;">Convert to PDF</button>
+      
+      <div class="result-section" id="resultSection">
+        <i class="fas fa-check-circle" style="font-size: 3rem; color: #00b894; margin-bottom: 1rem;"></i>
+        <h3>Conversion Complete!</h3>
+        <a href="#" class="download-btn" id="downloadBtn">
+          <i class="fas fa-download"></i> Download PDF
+        </a>
+      </div>
+    </div>
+    
+    <div style="margin-top: 3rem;">
+      <h2>How to Convert Word to PDF:</h2>
+      <ol style="margin-top: 1rem; line-height: 2;">
+        <li>Upload your Word document (DOC or DOCX)</li>
+        <li>Click "Convert to PDF" button</li>
+        <li>Wait a few seconds for processing</li>
+        <li>Download your converted PDF file</li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const selectFileBtn = document.getElementById('selectFileBtn');
+    const convertBtn = document.getElementById('convertBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progress = document.getElementById('progress');
+    const resultSection = document.getElementById('resultSection');
+    const downloadBtn = document.getElementById('downloadBtn');
+    
+    let selectedFile = null;
+    
+    // Event Listeners
+    selectFileBtn.addEventListener('click', () => fileInput.click());
+    
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) {
+        handleFileSelection(e.target.files[0]);
+      }
+    });
+    
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = '#00cec9';
+      dropZone.style.backgroundColor = 'rgba(0, 206, 201, 0.05)';
+    });
+    
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.style.borderColor = 'var(--primary)';
+      dropZone.style.backgroundColor = 'transparent';
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'var(--primary)';
+      dropZone.style.backgroundColor = 'transparent';
+      
+      if (e.dataTransfer.files.length) {
+        handleFileSelection(e.dataTransfer.files[0]);
+      }
+    });
+    
+    convertBtn.addEventListener('click', convertToPDF);
+    
+    // Functions
+    function handleFileSelection(file) {
+      const validTypes = ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      
+      if (!validTypes.includes(file.type) && !file.name.match(/\.(doc|docx)$/)) {
+        alert('Please select a valid Word document (DOC or DOCX)');
+        return;
+      }
+      
+      selectedFile = file;
+      dropZone.innerHTML = `
+        <i class="fas fa-file-alt" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+        <h3>${file.name}</h3>
+        <p>${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+      `;
+      convertBtn.style.display = 'block';
+    }
+    
+    function convertToPDF() {
+      if (!selectedFile) return;
+      
+      // Show progress bar
+      progressBar.style.display = 'block';
+      convertBtn.disabled = true;
+      
+      // Simulate conversion progress
+      let progressValue = 0;
+      const progressInterval = setInterval(() => {
+        progressValue += Math.random() * 10;
+        progress.style.width = `${Math.min(progressValue, 100)}%`;
+        
+        if (progressValue >= 100) {
+          clearInterval(progressInterval);
+          setTimeout(showResult, 500);
+        }
+      }, 200);
+    }
+    
+    function showResult() {
+      progressBar.style.display = 'none';
+      resultSection.style.display = 'block';
+      
+      // In a real app, you would have the actual converted file URL here
+      downloadBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        alert('In a real implementation, this would download the converted PDF');
+        // For actual implementation, you would use:
+        // const url = URL.createObjectURL(convertedPdfBlob);
+        // downloadBtn.href = url;
+      });
+    }
+  </script>
+</body>
+</html>

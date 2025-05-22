@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>JSON Formatter | ToolHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --primary: #6c5ce7;
+      --bg: #f5f6fa;
+      --card-bg: #ffffff;
+      --error-color: #e74c3c;
+      --text-color: #333;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+    .formatter-container {
+      background: var(--card-bg);
+      max-width: 700px;
+      width: 100%;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 1rem;
+      font-family: monospace;
+      font-size: 1rem;
+      border-radius: 10px;
+      border: 1.5px solid #ccc;
+      resize: vertical;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 5px var(--primary);
+    }
+    button {
+      margin-top: 1rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.8rem 2rem;
+      font-size: 1rem;
+      border-radius: 50px;
+      cursor: pointer;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      transition: all 0.3s;
+    }
+    button:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+    pre {
+      margin-top: 1.5rem;
+      background: #272822;
+      color: #f8f8f2;
+      padding: 1rem;
+      border-radius: 10px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 400px;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+    .error {
+      color: var(--error-color);
+      font-weight: 600;
+      text-align: center;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="formatter-container">
+    <h1>JSON Formatter</h1>
+    <textarea id="jsonInput" placeholder='Paste your JSON here...'></textarea>
+    <button onclick="formatJSON()">Format JSON</button>
+    <pre id="output"></pre>
+  </div>
+
+  <script>
+    function formatJSON() {
+      const input = document.getElementById('jsonInput').value.trim();
+      const output = document.getElementById('output');
+      if (!input) {
+        output.textContent = '';
+        return;
+      }
+      try {
+        const obj = JSON.parse(input);
+        output.textContent = JSON.stringify(obj, null, 2);
+        output.classList.remove('error');
+      } catch (e) {
+        output.textContent = 'Invalid JSON';
+        output.classList.add('error');
+      }
+    }
+  </script>
+</body>
+</html>

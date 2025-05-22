@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PDF to Word Converter | ToolHub</title>
+  <style>
+    :root {
+      --primary: #6c5ce7;
+      --bg: #f5f6fa;
+      --card-bg: #ffffff;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+    .converter-container {
+      max-width: 600px;
+      width: 100%;
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 {
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    p {
+      color: #666;
+      margin-bottom: 2rem;
+    }
+    .drop-zone {
+      border: 3px dashed var(--primary);
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 1.25rem;
+      min-height: 180px;
+      text-align: center;
+      background-color: white;
+      box-shadow: 0 0 15px rgba(108, 92, 231, 0.15);
+      margin-bottom: 1.5rem;
+    }
+    .drop-zone:hover {
+      background-color: #f0f0ff;
+      border-color: #5a4ddb;
+      box-shadow: 0 0 25px rgba(108, 92, 231, 0.35);
+    }
+    .drop-zone.dragover {
+      background-color: #dbe1ff;
+      border-color: #4e3fd1;
+      box-shadow: 0 0 30px rgba(78, 63, 209, 0.8);
+      color: #4e3fd1;
+    }
+    .drop-zone i {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+    #fileInput {
+      display: none;
+    }
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 0.5rem 0.5rem 0 0.5rem;
+      transition: all 0.3s;
+      min-width: 140px;
+    }
+    button:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+    .button-group {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+      gap: 1rem;
+    }
+  </style>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div class="converter-container">
+    <h1>PDF to Word Converter</h1>
+    <p>Upload a PDF file and convert it to an editable Word document.</p>
+
+    <div class="drop-zone" id="dropZone">
+      <i class="fas fa-file-pdf"></i>
+      <h3>Drag & Drop PDF Here</h3>
+      <p>or</p>
+      <button id="selectFilesBtn">Select PDF File</button>
+      <input type="file" id="fileInput" accept="application/pdf" />
+    </div>
+
+    <div class="button-group">
+      <button id="convertBtn" disabled>Convert to Word</button>
+      <button id="downloadBtn" disabled>Download Word File</button>
+    </div>
+  </div>
+
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const selectFilesBtn = document.getElementById('selectFilesBtn');
+    const convertBtn = document.getElementById('convertBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    let uploadedFile = null;
+    let convertedFileBlob = null;
+
+    selectFilesBtn.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    function handleFile(file) {
+      if (file.type !== "application/pdf") {
+        alert("Please upload a valid PDF file.");
+        return;
+      }
+      uploadedFile = file;
+      convertBtn.disabled = false;
+      downloadBtn.disabled = true;
+      dropZone.querySelector('h3').textContent = `File selected: ${file.name}`;
+    }
+
+    convertBtn.addEventListener('click', () => {
+      if (!uploadedFile) return;
+
+      convertBtn.disabled = true;
+      convertBtn.textContent = "Converting...";
+      downloadBtn.disabled = true;
+
+      // Simulate conversion process (replace with actual PDF to Word logic)
+      setTimeout(() => {
+        // Fake converted file blob for demo
+        convertedFileBlob = new Blob(
+          ["This is a fake Word document content."],
+          { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }
+        );
+
+        convertBtn.disabled = false;
+        convertBtn.textContent = "Convert to Word";
+        downloadBtn.disabled = false;
+
+        alert("Conversion complete! You can now download your Word file.");
+      }, 2000);
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      if (!convertedFileBlob) return;
+
+      const url = URL.createObjectURL(convertedFileBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = uploadedFile.name.replace(/\.pdf$/i, ".docx");
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
