@@ -1,394 +1,271 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Word to PDF Converter | ToolHub</title>
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-  />
-  <style>
-    :root {
-      --primary: #6c5ce7;
-      --text: #2d3436;
-      --bg: #f5f6fa;
-      --card-bg: #ffffff;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Toolhub - Word to PDF Converter</title>
+<style>
+  /* Reset */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f9fafb;
+    color: #1e293b;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
 
-    [data-theme="dark"] {
-      --primary: #a29bfe;
-      --text: #f5f6fa;
-      --bg: #1e272e;
-      --card-bg: #2d3436;
-    }
+  header {
+    background: #2563eb;
+    padding: 24px 40px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    text-align: center;
+    font-weight: 700;
+    font-size: 2rem;
+    letter-spacing: 1.5px;
+    color: white;
+    user-select: none;
+  }
 
-    body {
-      font-family: "Inter", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      transition: background 0.3s;
-    }
+  main {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px 20px;
+  }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
+  .converter-container {
+    background: white;
+    padding: 40px 40px 50px;
+    border-radius: 12px;
+    width: 400px;
+    box-shadow: 0 12px 36px rgba(37, 99, 235, 0.12);
+    text-align: center;
+  }
 
-    .converter-container {
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 2rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      margin-top: 2rem;
-    }
+  h2 {
+    margin-bottom: 28px;
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #2563eb;
+    user-select: none;
+  }
 
-    .drop-zone {
-      border: 2px dashed var(--primary);
-      border-radius: 8px;
-      padding: 3rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s;
-      margin-bottom: 1.5rem;
-    }
+  /* Drag & Drop */
+  #dropZone {
+    border: 2.5px dashed #cbd5e1;
+    border-radius: 14px;
+    padding: 45px 20px;
+    color: #64748b;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  #dropZone svg {
+    width: 48px;
+    height: 48px;
+    stroke: #64748b;
+    transition: stroke 0.3s ease;
+  }
 
-    .drop-zone:hover {
-      background: rgba(108, 92, 231, 0.05);
-    }
+  #dropZone.dragover {
+    background-color: #e0e7ff;
+    border-color: #2563eb;
+    color: #2563eb;
+  }
+  #dropZone.dragover svg {
+    stroke: #2563eb;
+  }
 
-    .file-input {
-      display: none;
-    }
+  #fileInput {
+    display: none;
+  }
 
-    .convert-btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 0.8rem 2rem;
-      border-radius: 50px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all 0.3s;
-      display: block;
-      margin: 1rem auto;
-      width: fit-content;
-    }
+  button {
+    background: #2563eb;
+    border: none;
+    padding: 14px 25px;
+    border-radius: 10px;
+    color: white;
+    font-size: 1.15rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    width: 100%;
+    margin-top: 25px;
+    user-select: none;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+  }
+  button:hover {
+    background: #1e40af;
+    box-shadow: 0 6px 20px rgba(30, 64, 175, 0.6);
+  }
 
-    .convert-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
-    }
-
-    .progress-bar {
-      height: 6px;
-      background: rgba(108, 92, 231, 0.2);
-      border-radius: 3px;
-      margin: 1.5rem 0;
-      overflow: hidden;
-      display: none;
-    }
-
-    .progress {
-      height: 100%;
-      background: var(--primary);
-      width: 0%;
-      transition: width 0.3s;
-    }
-
-    .result-section {
-      display: none;
-      text-align: center;
-      margin-top: 2rem;
-    }
-
-    .download-btn {
-      background: #00b894;
-      color: white;
-      padding: 0.8rem 1.5rem;
-      border-radius: 50px;
-      text-decoration: none;
-      display: inline-block;
-      margin-top: 1rem;
-      transition: all 0.3s;
-    }
-
-    .download-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 184, 148, 0.3);
-    }
-
-    .error-message {
-      color: #ff7675;
-      margin-top: 1rem;
-      display: none;
-    }
-  </style>
+  footer {
+    text-align: center;
+    padding: 16px 10px;
+    font-size: 0.9rem;
+    color: #64748b;
+    background: #f9fafb;
+    user-select: none;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>Word to PDF Converter</h1>
-    <p>Convert DOC/DOCX files to PDF format instantly</p>
 
-    <div class="converter-container">
-      <div class="drop-zone" id="dropZone">
-        <i
-          class="fas fa-file-word"
-          style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem"
-        ></i>
-        <h3>Drag & Drop Word File Here</h3>
-        <p>or</p>
-        <button class="convert-btn" id="selectFileBtn">Select File</button>
-        <input
-          type="file"
-          id="fileInput"
-          class="file-input"
-          accept=".doc,.docx"
-        />
-      </div>
+<header>
+  Toolhub - Word to PDF Converter
+</header>
 
-      <div class="progress-bar" id="progressBar">
-        <div class="progress" id="progress"></div>
-      </div>
-
-      <button class="convert-btn" id="convertBtn" style="display: none">
-        Convert to PDF
-      </button>
-
-      <div class="error-message" id="errorMessage"></div>
-
-      <div class="result-section" id="resultSection">
-        <i
-          class="fas fa-check-circle"
-          style="font-size: 3rem; color: #00b894; margin-bottom: 1rem"
-        ></i>
-        <h3>Conversion Complete!</h3>
-        <a
-          href="#"
-          class="download-btn"
-          id="downloadBtn"
-          target="_blank"
-          rel="noopener noreferrer"
-          > <i class="fas fa-download"></i> Download PDF</a
-        >
-      </div>
-    </div>
-
-    <div style="margin-top: 3rem">
-      <h2>How to Convert Word to PDF:</h2>
-      <ol style="margin-top: 1rem; line-height: 2">
-        <li>Upload your Word document (DOC or DOCX)</li>
-        <li>Click "Convert to PDF" button</li>
-        <li>Wait a few seconds for processing</li>
-        <li>Download your converted PDF file</li>
-      </ol>
-    </div>
+<main>
+  <div class="converter-container">
+    <h2>Upload or Drag & Drop .docx file</h2>
+    
+    <label id="dropZone" for="fileInput" tabindex="0" aria-label="File Upload Drop Zone">
+      <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+        viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      Drag & Drop your .docx file here, or click to select
+    </label>
+    <input type="file" id="fileInput" accept=".docx" />
+    
+    <button onclick="convert()">Convert to PDF</button>
   </div>
+</main>
 
-  <script>
-    const dropZone = document.getElementById("dropZone");
-    const fileInput = document.getElementById("fileInput");
-    const selectFileBtn = document.getElementById("selectFileBtn");
-    const convertBtn = document.getElementById("convertBtn");
-    const progressBar = document.getElementById("progressBar");
-    const progress = document.getElementById("progress");
-    const resultSection = document.getElementById("resultSection");
-    const downloadBtn = document.getElementById("downloadBtn");
-    const errorMessage = document.getElementById("errorMessage");
+<footer>
+  &copy; 2025 Toolhub
+</footer>
 
-    let selectedFile = null;
+<script>
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("fileInput");
+let selectedFile = null;
 
-    // Function to show error message
-    function showError(msg) {
-      errorMessage.textContent = msg;
-      errorMessage.style.display = "block";
-      setTimeout(() => {
-        errorMessage.style.display = "none";
-      }, 5000);
-    }
-
-    // File selection handler
-    selectFileBtn.addEventListener("click", () => fileInput.click());
-
-    fileInput.addEventListener("change", (e) => {
-      if (e.target.files.length) {
-        handleFileSelection(e.target.files[0]);
-      }
-    });
-
-    // Drag and drop handlers
-    dropZone.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      dropZone.style.borderColor = "#00cec9";
-      dropZone.style.backgroundColor = "rgba(0, 206, 201, 0.05)";
-    });
-
-    dropZone.addEventListener("dragleave", () => {
-      dropZone.style.borderColor = "var(--primary)";
-      dropZone.style.backgroundColor = "transparent";
-    });
-
-    dropZone.addEventListener("drop", (e) => {
-      e.preventDefault();
-      dropZone.style.borderColor = "var(--primary)";
-      dropZone.style.backgroundColor = "transparent";
-
-      if (e.dataTransfer.files.length) {
-        handleFileSelection(e.dataTransfer.files[0]);
-      }
-    });
-
-    // Conversion handler
-    convertBtn.addEventListener("click", async () => {
-      if (!selectedFile) return;
-
-      // Reset UI
-      progressBar.style.display = "block";
-      progress.style.width = "10%";
-      resultSection.style.display = "none";
-      errorMessage.style.display = "none";
-      convertBtn.disabled = true;
-
-      try {
-        // Using a free conversion API (note: for production use, you should use your own backend)
-        const apiUrl = "https://api.cloudconvert.com/v2/convert";
-        
-        // First create a conversion job
-        const jobResponse = await fetch("https://api.cloudconvert.com/v2/jobs", {
-          method: "POST",
-          headers: {
-            "Authorization": "Bearer YOUR_CLOUDCONVERT_API_KEY", // Replace with your API key
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            "tasks": {
-              "import-1": {
-                "operation": "import/upload"
-              },
-              "task-1": {
-                "operation": "convert",
-                "input": ["import-1"],
-                "output_format": "pdf",
-                "engine": "office"
-              },
-              "export-1": {
-                "operation": "export/url",
-                "input": ["task-1"]
-              }
-            }
-          })
-        });
-
-        if (!jobResponse.ok) {
-          throw new Error("Failed to create conversion job");
-        }
-
-        const jobData = await jobResponse.json();
-        const uploadUrl = jobData.data.tasks.find(t => t.name === "import-1").result.form.url;
-        const uploadFormData = jobData.data.tasks.find(t => t.name === "import-1").result.form.parameters;
-        
-        // Upload the file
-        progress.style.width = "30%";
-        const formData = new FormData();
-        formData.append("file", selectedFile);
-        for (const key in uploadFormData) {
-          formData.append(key, uploadFormData[key]);
-        }
-
-        const uploadResponse = await fetch(uploadUrl, {
-          method: "POST",
-          body: formData
-        });
-
-        if (!uploadResponse.ok) {
-          throw new Error("File upload failed");
-        }
-
-        progress.style.width = "60%";
-        
-        // Wait for conversion to complete
-        let exportUrl;
-        let attempts = 0;
-        const maxAttempts = 30; // 30 attempts with 2s delay = 1 minute timeout
-        
-        while (attempts < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          const statusResponse = await fetch(`https://api.cloudconvert.com/v2/jobs/${jobData.data.id}`, {
-            headers: {
-              "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiZDlmM2Q4NjMyM2Y3ZTk1ZTZkOWNkOWJkYzFlNjY5YThlZjc0MTc5YTQ0MmUxZTk4NGEyMjdhMTkzNjEzNmRlNjU3NjdiNGJkMmQ1MjMxZDUiLCJpYXQiOjE3NDc4OTkxMTQuODgyMTU3LCJuYmYiOjE3NDc4OTkxMTQuODgyMTU5LCJleHAiOjQ5MDM1NzI3MTQuODc4MTU3LCJzdWIiOiI3MjAwMzA2NCIsInNjb3BlcyI6WyJ1c2VyLnJlYWQiLCJ1c2VyLndyaXRlIiwidGFzay5yZWFkIiwidGFzay53cml0ZSIsIndlYmhvb2sucmVhZCIsIndlYmhvb2sud3JpdGUiLCJwcmVzZXQucmVhZCIsInByZXNldC53cml0ZSJdfQ.Ozgh2iniW_cTlNql0pQVY_aw61J9SY4PjyxWMUVy2rmbWdlkGkWsFkaYJmjXseu69ncygJWbZLkcyLqxRgwDQ9L5SUj5MEtC13-UJ4TOuqXaJlOBdhgn4CTZ___LjSrQzof7vmvVu593IPss3bYyleqIE3spKBpDKRIQxT1hjeFBxqo8ucTgIYNg2sPShPYsre62tD0sL6vjnR-NzsMAvoHGqptGgr2mIiP5xjcs-MT_0V-YatMcA4ieBaEjJASA1GcFyDdhZg4VKypDsEo0FMr5fd36OeOL8l-eDtGjBMDlbwflvCEwPLcxN0rqSPih9YOzEjPBmjv_rjw485qndhp1hq-_oW-N8pUtp0HQp2-bEXHko5pMmNM5JVuKdIB2vyyhEdH1-aGqrIINhVwSji84sVk8y-MmGGHsDviz9bGiEPM0TLU1-JckY_U-K25-BVGSenhBhIC3jGd8XdF9eWW0PUiXzdMFx2rkA2n4JBO291ZZtXeMN1A_jeGjOkuV5_Q-BiEk86gm9Bx_oLgqj1wwRfRwt7BvGoNyXRm74mqH0uTDp7rhBbd-XodtNN0Mb9GG2IX5MDTP8hGS05weABUsaLOxZJRQ9lrlD-JEYsOaoWh_R1xeaQDfrJ7G4b8H84OmoAembGwus0yKy1Fs0Z_0f2GFp1MT4D0QhVaGbOM"
-            }
-          });
-          
-          const statusData = await statusResponse.json();
-          if (statusData.data.status === "finished") {
-            exportUrl = statusData.data.tasks.find(t => t.name === "export-1").result.files[0].url;
-            break;
-          } else if (statusData.data.status === "error") {
-            throw new Error("Conversion failed");
-          }
-          attempts++;
-        }
-
-        if (!exportUrl) {
-          throw new Error("Conversion timed out");
-        }
-
-        progress.style.width = "90%";
-        
-        // Download the converted file
-        const downloadResponse = await fetch(exportUrl);
-        if (!downloadResponse.ok) {
-          throw new Error("Failed to download converted file");
-        }
-
-        const pdfBlob = await downloadResponse.blob();
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-        
-        progress.style.width = "100%";
-        resultSection.style.display = "block";
-        downloadBtn.href = pdfUrl;
-        downloadBtn.download = selectedFile.name.replace(/\.[^/.]+$/, "") + ".pdf";
-      } catch (error) {
-        showError("Conversion failed: " + error.message);
-        console.error("Conversion error:", error);
-      } finally {
-        convertBtn.disabled = false;
-      }
-    });
-
-    function handleFileSelection(file) {
-      const validTypes = [
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      ];
-
-      // Check file type and extension
-      if (
-        !validTypes.includes(file.type) &&
-        !file.name.match(/\.(doc|docx)$/i)
-      ) {
-        showError("Please select a valid Word document (DOC or DOCX)");
-        return;
-      }
-
-      // Check file size (limit to 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        showError("File size too large. Maximum 10MB allowed.");
-        return;
-      }
-
+// Drag & Drop styling and file selection
+dropZone.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  dropZone.classList.add("dragover");
+});
+dropZone.addEventListener("dragleave", (e) => {
+  e.preventDefault();
+  dropZone.classList.remove("dragover");
+});
+dropZone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropZone.classList.remove("dragover");
+  
+  if (e.dataTransfer.files.length) {
+    const file = e.dataTransfer.files[0];
+    if (file.name.toLowerCase().endsWith(".docx")) {
       selectedFile = file;
       dropZone.innerHTML = `
-        <i class="fas fa-file-alt" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
-        <h3>${file.name}</h3>
-        <p>${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+        viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        Selected file: ${file.name}
       `;
-      convertBtn.style.display = "block";
-      resultSection.style.display = "none";
-      progress.style.width = "0%";
-      errorMessage.style.display = "none";
+      fileInput.files = e.dataTransfer.files;
+    } else {
+      alert("Please upload a valid .docx file");
     }
-  </script>
+  }
+});
+
+// Keyboard accessibility: allow pressing Enter or Space on label to open file dialog
+dropZone.addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    fileInput.click();
+  }
+});
+
+// File input change event
+fileInput.addEventListener("change", (e) => {
+  if (fileInput.files.length) {
+    const file = fileInput.files[0];
+    if (file.name.toLowerCase().endsWith(".docx")) {
+      selectedFile = file;
+      dropZone.innerHTML = `
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+        viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        Selected file: ${file.name}
+      `;
+    } else {
+      alert("Please upload a valid .docx file");
+      fileInput.value = "";
+      selectedFile = null;
+      dropZone.innerHTML = `
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+        viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        Drag & Drop your .docx file here, or click to select
+      `;
+    }
+  }
+});
+
+// Docx reading and PDF generation
+async function readDocx(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      JSZip.loadAsync(e.target.result).then(zip => {
+        zip.file("word/document.xml").async("string").then(xml => {
+          const texts = [...xml.matchAll(/<w:t[^>]*>(.*?)<\/w:t>/g)].map(m => m[1]);
+          resolve(texts.join(" "));
+        }).catch(reject);
+      }).catch(reject);
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function convert() {
+  if (!selectedFile) return alert("Please upload or drag & drop a .docx file first");
+  try {
+    const text = await readDocx(selectedFile);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+    const margin = 10;
+    const pageWidth = pdf.internal.pageSize.getWidth() - margin * 2;
+    const lines = pdf.splitTextToSize(text, pageWidth);
+    pdf.text(lines, margin, 20);
+    pdf.save("converted.pdf");
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+}
+</script>
+
 </body>
 </html>
