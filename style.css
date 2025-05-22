@@ -1,121 +1,314 @@
-/\* === Modern Additions === */
-/* Gradient Text & Borders \*/
-.hero h1 span, .tool-card h3 {
-background: linear-gradient(45deg, #6c5ce7, #a29bfe);
--webkit-background-clip: text;
-background-clip: text;
-color: transparent;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Toolhub - Word to PDF Converter</title>
+<style>
+  /* Reset */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  :root {
+    --primary: #2563eb;
+    --text: #1e293b;
+  }
 
-.tool-card {
-border: 1px solid rgba(108, 92, 231, 0.1);
-position: relative;
-overflow: hidden;
-}
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f9fafb;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
 
-.tool-card::after {
-content: '';
-position: absolute;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-background: linear-gradient(45deg, rgba(108, 92, 231, 0.05), transparent);
-opacity: 0;
-transition: opacity 0.3s;
-}
+  /* Gradient Text */
+  header span, h2 span {
+    background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    user-select: none;
+  }
 
-.tool-card\:hover::after {
-opacity: 1;
-}
+  /* Sticky header */
+  header {
+    position: sticky;
+    top: 0;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 100;
+    padding: 24px 40px;
+    font-weight: 700;
+    font-size: 2rem;
+    letter-spacing: 1.5px;
+    color: var(--primary);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    user-select: none;
+    text-align: center;
+  }
 
-/\* Floating Navbar \*/
-header {
-position: sticky;
-top: 0;
-backdrop-filter: blur(10px);
-background: rgba(255, 255, 255, 0.8);
-z-index: 100;
-}
+  main {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px 20px;
+  }
 
-\[data-theme="dark"] header {
-background: rgba(45, 52, 54, 0.8);
-}
+  .converter-container {
+    background: white;
+    padding: 40px 40px 50px;
+    border-radius: 12px;
+    width: 420px;
+    box-shadow: 0 12px 36px rgba(37, 99, 235, 0.12);
+    text-align: center;
+  }
 
-/\* Animated Button \*/
-button, .search-box button {
-transition: all 0.3s ease;
-position: relative;
-overflow: hidden;
-}
+  h2 {
+    margin-bottom: 28px;
+    font-weight: 700;
+    font-size: 1.8rem;
+    user-select: none;
+    color: var(--text);
+  }
 
-button::after, .search-box button::after {
-content: '';
-position: absolute;
-top: 50%;
-left: 50%;
-width: 5px;
-height: 5px;
-background: rgba(255, 255, 255, 0.5);
-opacity: 0;
-border-radius: 100%;
-transform: scale(1, 1) translate(-50%, -50%);
-transform-origin: 50% 50%;
-}
+  h2 span {
+    background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 
-button\:active::after, .search-box button\:active::after {
-animation: ripple 0.6s ease-out;
-}
+  /* Tool-card style */
+  .tool-card {
+    border: 1px solid rgba(108, 92, 231, 0.1);
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+  }
+  .tool-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(45deg, rgba(108, 92, 231, 0.05), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    border-radius: 14px;
+  }
+  .tool-card:hover::after {
+    opacity: 1;
+  }
 
-@keyframes ripple {
-0% {
-transform: scale(0, 0);
-opacity: 0.5;
-}
-100% {
-transform: scale(20, 20);
-opacity: 0;
-}
-}
+  /* Drag & Drop Box (Drag & Drop Menu) */
+  #dropZone {
+    border: 2px dashed var(--primary);
+    border-radius: 16px;
+    padding: 45px 30px;
+    color: var(--primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    min-height: 140px;
+    justify-content: center;
+  }
+  #dropZone svg {
+    width: 56px;
+    height: 56px;
+    stroke: var(--primary);
+    transition: stroke 0.3s ease;
+  }
+  #dropZone.dragover {
+    background-color: #e0e7ff;
+    color: #1e40af;
+    border-color: #1e40af;
+  }
+  #dropZone.dragover svg {
+    stroke: #1e40af;
+  }
 
-/\* Skeleton Loading (Simulated) \*/
-.tool-card.skeleton {
-animation: pulse 1.5s infinite;
-}
+  #fileInput {
+    display: none;
+  }
 
-@keyframes pulse {
-0% { opacity: 0.6; }
-50% { opacity: 0.3; }
-100% { opacity: 0.6; }
-}
+  /* Animated Button */
+  button {
+    background: var(--primary);
+    border: none;
+    padding: 14px 25px;
+    border-radius: 10px;
+    color: white;
+    font-size: 1.15rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    margin-top: 25px;
+    user-select: none;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+  }
+  button:hover {
+    background: #1e40af;
+    box-shadow: 0 6px 20px rgba(30, 64, 175, 0.6);
+  }
+  button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1) translate(-50%, -50%);
+    transform-origin: 50% 50%;
+  }
+  button:active::after {
+    animation: ripple 0.6s ease-out;
+  }
+  @keyframes ripple {
+    0% {
+      transform: scale(0, 0);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(20, 20);
+      opacity: 0;
+    }
+  }
 
-/\* Category Tabs \*/
-.category-tabs {
-display: flex;
-gap: 1rem;
-margin-bottom: 2rem;
-overflow-x: auto;
-padding-bottom: 0.5rem;
-}
+  footer {
+    text-align: center;
+    padding: 16px 10px;
+    font-size: 0.9rem;
+    color: #64748b;
+    background: #f9fafb;
+    user-select: none;
+  }
+</style>
 
-.category-tabs::-webkit-scrollbar {
-height: 4px;
-}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
 
-.category-tabs button {
-background: none;
-border: none;
-padding: 0.5rem 1rem;
-border-radius: 50px;
-cursor: pointer;
-white-space: nowrap;
-font-weight: 500;
-color: var(--text);
-opacity: 0.7;
-}
+<header><span>Toolhub - Word to PDF Converter</span></header>
 
-.category-tabs button.active {
-background: var(--primary);
-color: white;
-opacity: 1;
+<main>
+  <div class="converter-container tool-card">
+    <h2><span>Drag & Drop Menu</span></h2>
+    
+    <label id="dropZone" for="fileInput" tabindex="0" aria-label="File Upload Drop Zone">
+      <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+        viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      Drag & Drop your .docx file here, or click to select
+    </label>
+    <input type="file" id="fileInput" accept=".docx" />
+
+    <button onclick="convert()">Convert to PDF</button>
+  </div>
+</main>
+
+<footer>
+  &copy; 2025 Toolhub
+</footer>
+
+<script>
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("fileInput");
+let selectedFile = null;
+
+// Drag & Drop styling and file selection
+dropZone.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  dropZone.classList.add("dragover");
+});
+dropZone.addEventListener("dragleave", (e) => {
+  e.preventDefault();
+  dropZone.classList.remove("dragover");
+});
+dropZone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropZone.classList.remove("dragover");
+  
+  if (e.dataTransfer.files.length) {
+    const file = e.dataTransfer.files[0];
+    if (file.name.toLowerCase().endsWith(".docx")) {
+      selectedFile = file;
+      dropZone.innerHTML = `
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+        viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        Selected file: ${file.name}
+      `;
+      fileInput.files = e.dataTransfer.files;
+    } else {
+      alert("Please upload a valid .docx file");
+    }
+  }
+});
+
+// Keyboard accessibility: allow pressing Enter or Space on label to open file dialog
+dropZone.addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    fileInput.click();
+  }
+});
+
+// File input change event
+fileInput.addEventListener("change", (e) => {
+  if (fileInput.files.length) {
+    const file = fileInput.files[0];
+    if (file.name.toLowerCase().endsWith(".docx")) {
+      selectedFile = file;
+      dropZone.innerHTML = `
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+        viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        Selected file: ${file.name}
+      `;
+    } else {
+      alert("Please upload a valid .docx file");
+    }
+  }
+});
+
+// Convert function placeholder
+function convert() {
+  if (!selectedFile) {
+    alert("Please upload a .docx file first.");
+    return;
+  }
+  alert(`Ready to convert: ${selectedFile.name}`);
+  // Add your Word to PDF conversion logic here
 }
+</script>
+
+</body>
+</html>
