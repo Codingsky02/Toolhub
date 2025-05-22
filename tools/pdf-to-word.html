@@ -7,86 +7,94 @@
 <style>
   :root {
     --primary: #6c5ce7;
-    --primary-light: rgba(108, 92, 231, 0.1);
+    --primary-light: #a29bfe;
     --primary-gradient: linear-gradient(45deg, #6c5ce7, #a29bfe);
     --background: #f9faff;
     --text: #333;
+    --border-light: rgba(108, 92, 231, 0.1);
+  }
+
+  * {
+    box-sizing: border-box;
   }
 
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     max-width: 600px;
     margin: 3rem auto;
-    padding: 1.5rem;
+    padding: 1.5rem 2rem;
     background: var(--background);
     color: var(--text);
+    user-select: none;
   }
 
   h1 {
-    font-weight: 700;
-    font-size: 2rem;
-    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 900;
     margin-bottom: 2rem;
+    text-align: center;
     background: var(--primary-gradient);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    user-select: none;
+    letter-spacing: 0.05em;
   }
 
   #drop-area {
-    border: 2px dashed var(--primary);
-    border-radius: 10px;
-    padding: 3rem 1rem;
+    border: 2.5px dashed var(--primary);
+    border-radius: 12px;
+    padding: 3rem 1.5rem;
     text-align: center;
-    cursor: pointer;
-    color: var(--primary);
     font-weight: 600;
-    font-size: 1.1rem;
-    transition: background-color 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    user-select: none;
+    font-size: 1.2rem;
+    color: var(--primary);
+    cursor: pointer;
+    box-shadow: 0 6px 12px rgba(108, 92, 231, 0.1);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
   }
 
+  #drop-area:hover,
   #drop-area.hover {
-    background: #e6ebff;
+    background-color: rgba(108, 92, 231, 0.1);
+    border-color: var(--primary-light);
   }
 
-  #drop-area::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+  #drop-area span {
     background: var(--primary-gradient);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    border-radius: 10px;
-    pointer-events: none;
-  }
-
-  #drop-area.hover::after {
-    opacity: 0.05;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 900;
   }
 
   button {
+    margin-top: 2rem;
     background: var(--primary);
-    color: white;
+    background-image: var(--primary-gradient);
     border: none;
-    padding: 0.8rem 1.6rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    border-radius: 10px;
+    border-radius: 50px;
+    color: #fff;
+    padding: 0.9rem 0;
+    font-size: 1.25rem;
+    font-weight: 700;
     cursor: pointer;
     width: 100%;
-    margin-top: 1.5rem;
+    box-shadow: 0 8px 16px rgba(108, 92, 231, 0.3);
     position: relative;
     overflow: hidden;
-    transition: background-color 0.3s ease;
+    transition: background-position 0.3s ease;
+    background-size: 200% 200%;
+    background-position: 0% 50%;
+  }
+
+  button:hover:not(:disabled) {
+    background-position: 100% 50%;
   }
 
   button:disabled {
-    opacity: 0.5;
+    background: rgba(108, 92, 231, 0.3);
     cursor: not-allowed;
+    box-shadow: none;
   }
 
   button::after {
@@ -94,13 +102,14 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 5px;
-    height: 5px;
+    width: 7px;
+    height: 7px;
     background: rgba(255, 255, 255, 0.5);
     opacity: 0;
     border-radius: 100%;
     transform: scale(1, 1) translate(-50%, -50%);
     transform-origin: 50% 50%;
+    pointer-events: none;
   }
 
   button:active::after {
@@ -123,7 +132,7 @@
 
 <h1>PDF to Word Converter</h1>
 
-<div id="drop-area">Drag & Drop your <span style="background: var(--primary-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 700;">.pdf</span> file here or click to select</div>
+<div id="drop-area">Drag & Drop your <span>.pdf</span> file here or click to select</div>
 <input type="file" id="fileElem" accept=".pdf" style="display:none" />
 
 <button id="convertBtn" disabled>Convert to Word</button>
@@ -132,6 +141,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.0.1/docx.umd.js"></script>
 
 <script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.6.172/pdf.worker.min.js';
+
   const dropArea = document.getElementById("drop-area");
   const fileInput = document.getElementById("fileElem");
   const convertBtn = document.getElementById("convertBtn");
@@ -170,7 +181,7 @@
     } else {
       alert("Please upload a valid PDF file.");
       selectedFile = null;
-      dropArea.innerHTML = `Drag & Drop your <span style="background: var(--primary-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 700;">.pdf</span> file here or click to select`;
+      dropArea.innerHTML = `Drag & Drop your <span>.pdf</span> file here or click to select`;
       convertBtn.disabled = true;
     }
   }
@@ -183,8 +194,6 @@
 
     try {
       const arrayBuffer = await selectedFile.arrayBuffer();
-
-      // Load PDF document using pdf.js
       const pdfDoc = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
       const totalPages = pdfDoc.numPages;
       let fullText = "";
@@ -192,8 +201,6 @@
       for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
         const page = await pdfDoc.getPage(pageNum);
         const textContent = await page.getTextContent();
-
-        // Extract text items and join with spaces
         const pageText = textContent.items.map(item => item.str).join(" ");
         fullText += pageText + "\n\n";
       }
@@ -204,22 +211,12 @@
         return;
       }
 
-      // Create Word doc using docx.js
-      const { Document, Packer, Paragraph, TextRun } = window.docx;
-
-      // Split text by lines and paragraphs
+      const { Document, Packer, Paragraph } = window.docx;
       const paragraphs = fullText.trim().split(/\n+/).map(line => new Paragraph(line));
 
-      const doc = new Document({
-        sections: [{
-          properties: {},
-          children: paragraphs,
-        }],
-      });
-
+      const doc = new Document({sections: [{children: paragraphs}]});
       const buffer = await Packer.toBlob(doc);
 
-      // Save the docx file
       const link = document.createElement("a");
       link.href = URL.createObjectURL(buffer);
       link.download = selectedFile.name.replace(/\.pdf$/, ".docx");
@@ -241,7 +238,7 @@
     if (selectedFile) {
       dropArea.textContent = `Selected file: ${selectedFile.name}`;
     } else {
-      dropArea.innerHTML = `Drag & Drop your <span style="background: var(--primary-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 700;">.pdf</span> file here or click to select`;
+      dropArea.innerHTML = `Drag & Drop your <span>.pdf</span> file here or click to select`;
     }
   }
 </script>
