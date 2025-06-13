@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Converter</title>
+  <style>
+    :root {
+      --primary-color: #2196f3;
+      --background-color: #f9f9f9;
+      --card-color: #ffffff;
+      --text-color: #333333;
+      --accent-color: #00bcd4;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: var(--primary-color);
+      margin-bottom: 20px;
+    }
+
+    .tool-card {
+      background-color: var(--card-color);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    input[type="file"], select, button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    select {
+      background-color: #fff;
+      color: #333;
+    }
+
+    button {
+      background-color: var(--accent-color);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      border: none;
+    }
+
+    button:hover {
+      background-color: #0097a7;
+    }
+
+    canvas {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-card">
+    <h1>Image Converter</h1>
+    <input type="file" id="imageInput" accept="image/*">
+    <select id="format">
+      <option value="image/jpeg">JPG</option>
+      <option value="image/png">PNG</option>
+      <option value="image/webp">WebP</option>
+    </select>
+    <button onclick="convertImage()">Convert & Download</button>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <script>
+    function convertImage() {
+      const input = document.getElementById('imageInput');
+      const format = document.getElementById('format').value;
+
+      if (!input.files[0]) {
+        alert("Please select an image first!");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.getElementById('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+
+          const quality = 0.92;
+          canvas.toBlob(function (blob) {
+            const link = document.createElement('a');
+            link.download = 'converted-image.' + format.split('/')[1];
+            link.href = URL.createObjectURL(blob);
+            link.click();
+          }, format, quality);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  </script>
+</body>
+</html>
