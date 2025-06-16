@@ -119,3 +119,11 @@ background: var(--primary);
 color: white;
 opacity: 1;
 }
+
+
+.ad-square {
+  width: 250px;
+  height: 250px;
+  margin: 20px auto;
+  background: #f9f9f9; /* optional background */
+}
