@@ -121,9 +121,11 @@ opacity: 1;
 }
 
 
-.ad-square {
-  width: 250px;
-  height: 250px;
-  margin: 20px auto;
-  background: #f9f9f9; /* optional background */
+.ad-container {
+  background: #f8f8f8;
+  border: 1px dashed #ccc;
+  padding: 10px;
+  border-radius: 12px;
+  text-align: center;
+  min-height: 150px;
 }
